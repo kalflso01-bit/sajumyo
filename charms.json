@@ -1,0 +1,26 @@
+[
+  {
+    "title": "수호의 길상체부적",
+    "desc": "액운막이·행운",
+    "tag": "수호·행운",
+    "file": "charms/suho-gilsang.jpg",
+    "thumb": "charms/suho-gilsang_thumb.jpg",
+    "downloadName": "사주묘_수호의길상체부적.jpg"
+  },
+  {
+    "title": "행운 장수거북",
+    "desc": "장수와 건강",
+    "tag": "재물·평안·행운",
+    "file": "charms/longevity-turtle.jpg",
+    "thumb": "charms/longevity-turtle_thumb.jpg",
+    "downloadName": "사주묘_행운장수거북.jpg"
+  },
+  {
+    "title": "연애·재회 부적",
+    "desc": "사랑과 화합",
+    "tag": "좋은인연",
+    "file": "charms/love-reunion.jpg",
+    "thumb": "charms/love-reunion_thumb.jpg",
+    "downloadName": "사주묘_연애재회부적.jpg"
+  }
+]

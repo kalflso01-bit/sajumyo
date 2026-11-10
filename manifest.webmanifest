@@ -1,0 +1,38 @@
+{
+  "id": "./",
+  "name": "사주묘 · 고양이 점술사의 만세력",
+  "short_name": "사주묘",
+  "description": "고양이 점술사 묘묘가 풀어주는 무료 만세력과 오늘의 운세. 사주 원국, 오행·십성, 대운, 궁합, 별자리까지.",
+  "start_url": "./?src=app",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#26111D",
+  "theme_color": "#26111D",
+  "lang": "ko",
+  "dir": "ltr",
+  "categories": [
+    "lifestyle",
+    "entertainment"
+  ],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
