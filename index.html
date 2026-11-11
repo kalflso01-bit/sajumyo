@@ -867,6 +867,7 @@ footer b{font-family:var(--serif)}footer b:before{color:var(--pink)}
 .room.star i{border-color:rgba(226,190,140,.55)}
 .zh{background:radial-gradient(120% 90% at 80% 0%,#4A2A6B 0%,#2A1A4A 55%,#26111D 100%)}
 .feat .f-star{background:linear-gradient(135deg,#2A1A4A,#4A1F35)}
+.shop{margin-top:34px}
 </style>
 </head>
 <body>
@@ -934,10 +935,10 @@ const SHOP = {
   ]
 };
 const extLink = (url, inner, cls) => `<a class="${cls||''}" href="${url}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
-function shopBlock(){
+function shopBlock(noConsult){
   if (SHOP.mode === 'off') return '';
   if (SHOP.mode === 'simple') return `<section class="shop pad">${extLink(SHOP.home, `<span>${SHOP.name} 바로가기</span><small>koreaunse.com ↗</small>`)}</section>`;
-  return `<section class="shop pad"><h3>더 깊은 풀이가 궁금하다면</h3><p class="shop-sub">${SHOP.name}에서 전문 사주 풀이를 받아보세요.</p>${SHOP.items.map(it => extLink(it.url, `<span>${it.title}</span><small>${it.tag} ↗</small>`)).join('')}${extLink(SHOP.home, `<span>${SHOP.name} 전체 상품 보기</span><small>koreaunse.com ↗</small>`, 'all')}${extLink(SHOP.consult, `<span>${SHOP.name} 전통사주 상담 바로가기</span><small>peakon.me ↗</small>`, 'all')}</section>`;
+  return `<section class="shop pad"><h3>더 깊은 풀이가 궁금하다면</h3><p class="shop-sub">${SHOP.name}에서 전문 사주 풀이를 받아보세요.</p>${SHOP.items.map(it => extLink(it.url, `<span>${it.title}</span><small>${it.tag} ↗</small>`)).join('')}${extLink(SHOP.home, `<span>${SHOP.name} 전체 상품 보기</span><small>koreaunse.com ↗</small>`, 'all')}${noConsult ? '' : extLink(SHOP.consult, `<span>${SHOP.name} 전통사주 상담 바로가기</span><small>peakon.me ↗</small>`, 'all')}</section>`;
 }
 document.getElementById('logoMark').src = LOGO_MARK;
 
@@ -1258,8 +1259,7 @@ function renderLanding(){
       <button class="mtile" data-act="tab" data-k="star"><span class="h">星</span><span><b>별자리 × 사주</b><small>두 하늘 겹쳐보기</small></span></button>
       <button class="mtile" data-act="tab" data-k="charms"><span class="h">符</span><span><b>행운 부적</b><small>받아서 배경화면으로</small></span></button>
     </div>
-    <p class="mnote">한국천문연구원(KASI) 절기·음력 기준 · 서머타임·출생지 시차 보정<br>사주묘 by 운세명리</p>
-  </section>`;
+  </section>${shopBlock(true)}<section class="pad"><p class="mnote">한국천문연구원(KASI) 절기·음력 기준 · 서머타임·출생지 시차 보정<br>사주묘 by 운세명리</p></section>`;
 }
 const FACE = s => s >= 80 ? 'joy' : s >= 68 ? 'curious' : s >= 56 ? 'wish' : 'worry';
 const MOOD = {joy: '신났어!', curious: '궁금궁금', wish: '소원 비는 중', worry: '살짝 시무룩'};
