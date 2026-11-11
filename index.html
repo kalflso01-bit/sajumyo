@@ -1429,7 +1429,7 @@ function renderConfirm(){
   }
   const region = R.city[1] < 126.0 || ['평양시','개성시','함흥시','신의주시','원산시'].includes(i.city) ? '북한' : '대한민국';
   const why = i.unknownTime ? '태어난 시간을 모르면 시주를 뺀 여섯 글자(년·월·일주)로 사주를 세워요.'
-    : `${esc(i.city)}는 표준시 기준선(동경 ${c.meridian}°)과 경도가 달라, 실제 해의 위치에 맞춰 ${Math.abs(c.lon)}분을 ${c.lon < 0 ? '빼서' : '더해'} 계산해요.${c.meridian === 127.5 ? ' (1954~1961년 표준시 UTC+8:30 반영)' : ''}${c.dst ? ' 그 해 여름에 시행된 서머타임 1시간도 빼고 계산해요.' : ''}`;
+    : `${esc(i.city)}${hasJong(i.city) ? '은' : '는'} 표준시 기준선(동경 ${c.meridian}°)과 경도가 달라, 실제 해의 위치에 맞춰 ${Math.abs(c.lon)}분을 ${c.lon < 0 ? '빼서' : '더해'} 계산해요.${c.meridian === 127.5 ? ' (1954~1961년 표준시 UTC+8:30 반영)' : ''}${c.dst ? ' 그 해 여름에 시행된 서머타임 1시간도 빼고 계산해요.' : ''}`;
   view.innerHTML = `
   <section class="confirm pad">
     <div class="myo-say" style="margin-top:18px"><img src="img/wish.jpg" alt=""><p><small>묘묘</small>수정구슬 준비 완료! 이 정보가 맞는지 한 번만 확인해 줘.</p></div>
@@ -2161,7 +2161,7 @@ function matchAnalyze(RA, RB){
   else L.push({g:'n', hic: yic, t: yt, lab:'무난', p:'태어난 해끼리는 크게 부딪히지 않아요. 집안끼리도 무난하게 지낼 수 있어요.'});
   // 4) 배우자의 별 (남자는 재성, 여자는 관성)
   const spouse = (R1, R2, n1, n2) => { const tg = tenGod(R1.dm, 's', R2.dm), k = grpOf(tg);
-    if ((R1.inp.gender === 'M' && k === 2) || (R1.inp.gender === 'F' && k === 3)) return {g:'g', hic: STH[R2.dm], t:'배우자의 별', lab:'인연', p: n2 + '님의 일간이 ' + n1 + '님에게 ' + tg + '이에요. ' + (R1.inp.gender === 'M' ? '남자에게 아내' : '여자에게 남편') + '를 뜻하는 별이라, 배우자로 느끼기 쉬운 사람이에요.'};
+    if ((R1.inp.gender === 'M' && k === 2) || (R1.inp.gender === 'F' && k === 3)) return {g:'g', hic: STH[R2.dm], t:'배우자의 별', lab:'인연', p: n2 + '님의 일간이 ' + n1 + '님에게 ' + tg + (hasJong(tg) ? '이에요. ' : '예요. ') + (R1.inp.gender === 'M' ? '남자에게 아내를' : '여자에게 남편을') + ' 뜻하는 별이라, 배우자로 느끼기 쉬운 사람이에요.'};
     return null; };
   const sp = RA.inp.gender !== RB.inp.gender ? (spouse(RA, RB, A, B) || spouse(RB, RA, B, A)) : null; if (sp){ f.spouse = 1; L.push(sp); }
   // 5) 오행 보완
