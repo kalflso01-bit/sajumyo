@@ -1040,7 +1040,7 @@ const SHOP = {
   mode: IS_APP ? 'simple' : 'products',
   name: '운세명리',
   home: 'https://www.koreaunse.com/',
-  consult: 'https://peakon.me/@sajuunse',   // 전통사주 상담 (웹 버전에서만 표시)
+  consult: '',   // 사주묘에서는 전통사주 상담 링크를 쓰지 않음
   items: [
     { title: '연화아씨 연애비책', tag: '연애', url: 'https://www.koreaunse.com/f/cmuxourei000106pi70d1bsg5' },
     { title: '연 아씨 궁합사주', tag: '궁합', url: 'https://www.koreaunse.com/f/cmuj73sgv000604l1qmch07k9' },
@@ -1053,7 +1053,7 @@ const extLink = (url, inner, cls) => `<a class="${cls||''}" href="${url}" target
 function shopBlock(noConsult){
   if (SHOP.mode === 'off') return '';
   if (SHOP.mode === 'simple') return `<section class="shop pad">${extLink(SHOP.home, `<span>${SHOP.name} 바로가기</span><small>koreaunse.com ↗</small>`)}</section>`;
-  return `<section class="shop pad"><h3>더 깊은 풀이가 궁금하다면</h3><p class="shop-sub">${SHOP.name}에서 전문 사주 풀이를 받아보세요.</p>${SHOP.items.map(it => extLink(it.url, `<span>${it.title}</span><small>${it.tag} ↗</small>`)).join('')}${extLink(SHOP.home, `<span>${SHOP.name} 전체 상품 보기</span><small>koreaunse.com ↗</small>`, 'all')}${noConsult ? '' : extLink(SHOP.consult, `<span>${SHOP.name} 전통사주 상담 바로가기</span><small>peakon.me ↗</small>`, 'all')}</section>`;
+  return `<section class="shop pad"><h3>더 깊은 풀이가 궁금하다면</h3><p class="shop-sub">${SHOP.name}에서 전문 사주 풀이를 받아보세요.</p>${SHOP.items.map(it => extLink(it.url, `<span>${it.title}</span><small>${it.tag} ↗</small>`)).join('')}${extLink(SHOP.home, `<span>${SHOP.name} 전체 상품 보기</span><small>koreaunse.com ↗</small>`, 'all')}${noConsult || !SHOP.consult ? '' : extLink(SHOP.consult, `<span>${SHOP.name} 전통사주 상담 바로가기</span><small>peakon.me ↗</small>`, 'all')}</section>`;
 }
 document.getElementById('logoMark').src = LOGO_MARK;
 
