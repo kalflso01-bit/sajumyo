@@ -1353,6 +1353,54 @@ function recoCard(tag, why){
   return '<a class="reco" href="' + it.url + '" target="_blank" rel="noopener noreferrer"><img src="img/curious.jpg" alt=""><span><i>묘묘 추천</i><b>' + it.title + '</b><small>' + why + '</small></span><em>↗</em></a>';
 }
 
+/* 공유 v2: 모두 동기 처리 (iOS 사파리 공유창 차단 방지) */
+const MYO_IMGS = {};
+['joy', 'curious', 'wish', 'worry'].forEach(k => { const im = new Image(); im.crossOrigin = 'anonymous'; im.src = 'img/' + k + '.jpg'; MYO_IMGS[k] = im; });
+const imgReady = k => MYO_IMGS[k] && MYO_IMGS[k].complete && MYO_IMGS[k].naturalWidth > 0;
+function dataUrlToFile(dataUrl, name){
+  const bin = atob(dataUrl.split(',')[1]); const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  return new File([buf], name, {type: 'image/png'});
+}
+function shareNow(imgSrc, name, title, text, url){
+  let file = null; try { file = dataUrlToFile(imgSrc, name); } catch(e){}
+  const data = {title, text: text + '\n' + url, files: file ? [file] : []};
+  if (file && navigator.canShare && navigator.canShare(data)){ navigator.share(data).catch(() => {}); return; }
+  if (navigator.share){ navigator.share({title, text, url}).catch(() => {}); return; }
+  if (navigator.clipboard) navigator.clipboard.writeText(text + '\n' + url).then(() => toast('공유 문구를 복사했어요.'), () => {});
+  openModal(`<h3>공유 이미지<button class="x" data-act="close">×</button></h3><img class="ch-full" src="${imgSrc}" alt="공유 이미지"><p class="hint">공유 문구와 링크는 복사해 두었어요. 이미지를 저장해서 글과 함께 올려 주세요.</p><a class="btn y" style="display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:14px" href="${imgSrc}" download="${name}">이미지 저장</a>`);
+}
+function drawFaceSync(x, k, cx, cy, s, ring){
+  if (!imgReady(k)) return;
+  x.save(); x.beginPath(); x.arc(cx, cy, s / 2, 0, Math.PI * 2); x.closePath(); x.clip(); x.drawImage(MYO_IMGS[k], cx - s / 2, cy - s / 2, s, s); x.restore();
+  x.strokeStyle = ring || '#E2BE8C'; x.lineWidth = Math.max(4, s / 45); x.beginPath(); x.arc(cx, cy, s / 2, 0, Math.PI * 2); x.stroke();
+}
+function todayImage(R, off){
+  const T = todayData(R, off), f = FACE(T.score); const W = 1080, H = 1350; const [cv, x] = cvBase(W, H);
+  x.textAlign = 'center'; x.fillStyle = '#E2BE8C'; x.font = x.F(34, 700); x.fillText('✦ 묘묘가 봐준 오늘의 운세 ✦', W / 2, 110);
+  x.fillStyle = 'rgba(251,239,239,.75)'; x.font = x.F(32, 600); x.fillText(T.m + '월 ' + T.d + '일 ' + '일월화수목금토'[T.w] + '요일 · ' + ST[T.g.s] + BR[T.g.b] + '일', W / 2, 165);
+  drawFaceSync(x, f, W / 2, 400, 360);
+  x.textAlign = 'center'; x.fillStyle = '#F2A7B8'; x.font = x.F(210, 800); x.fillText(String(T.score), W / 2 - 40, 790); x.font = x.F(54, 700); x.fillStyle = 'rgba(251,239,239,.75)'; x.fillText('점', W / 2 + 150, 790);
+  x.fillStyle = '#FBEFEF'; x.font = x.F(58, 700, true); x.fillText(T.txt.t, W / 2, 890);
+  const nm = ['재물운', '애정운', '일·학업운', '건강운'];
+  x.fillStyle = 'rgba(255,255,255,.07)'; x.rr(110, 950, 860, 210, 32); x.fill(); x.strokeStyle = 'rgba(226,190,140,.35)'; x.lineWidth = 2; x.stroke();
+  nm.forEach((n, k) => { const cx = k % 2 ? 560 : 160, cy = 1030 + Math.floor(k / 2) * 80; x.textAlign = 'left'; x.fillStyle = '#FBEFEF'; x.font = x.F(36, 700); x.fillText(n, cx, cy);
+    x.fillStyle = '#E2BE8C'; x.font = x.F(34, 700); x.fillText('★★★★★'.slice(0, T.stars[k]) + '☆☆☆☆☆'.slice(0, 5 - T.stars[k]), cx + 190, cy); });
+  x.textAlign = 'center'; x.fillStyle = 'rgba(251,239,239,.85)'; x.font = x.F(32, 600); x.fillText('행운의 색 ' + EL_COLOR[T.low] + ' · 숫자 ' + EL_NUM[T.low] + ' · ' + EL_DIR[T.low], W / 2, 1220);
+  x.mark(); return cv.toDataURL('image/png');
+}
+function star7Image(){
+  const W = 1080, H = 1350; const [cv, x] = cvBase(W, H);
+  x.textAlign = 'center'; x.fillStyle = '#E2BE8C'; x.font = x.F(36, 700); x.fillText('✦ 묘묘 챌린지 ✦', W / 2, 120);
+  x.fillStyle = '#FBEFEF'; x.font = x.F(92, 800, true); x.fillText('7일 완주 🏆', W / 2, 250);
+  drawFaceSync(x, 'joy', W / 2, 560, 420);
+  x.textAlign = 'center';
+  for (let k = 0; k < 7; k++){ const cx = 165 + k * 125, cy = 900; x.fillStyle = k < 6 ? '#E2BE8C' : '#F2A7B8'; x.beginPath(); x.arc(cx, cy, 50, 0, Math.PI * 2); x.fill(); x.fillStyle = '#26111D'; x.font = x.F(k < 6 ? 52 : 46, 800, k === 6); x.fillText(k < 6 ? '★' : '符', cx, cy + 18); }
+  x.fillStyle = '#FBEFEF'; x.font = x.F(44, 700); x.fillText('일주일 동안 하루도 빠짐없이', W / 2, 1050); x.fillText('묘묘에게 별을 모아줬어요!', W / 2, 1112);
+  x.fillStyle = '#F2A7B8'; x.font = x.F(34, 700); x.fillText('황금 부적 획득 · ' + kstDay(0).replace(/-/g, '.'), W / 2, 1190);
+  x.mark(); return cv.toDataURL('image/png');
+}
+
 function renderLanding(){
   const saved = loadSaved(); const me = state.input;
   view.innerHTML = `<section class="pad" style="text-align:left">
@@ -1403,7 +1451,7 @@ function starCard(){
     : '<button class="mbtn2" data-act="starGet">' + (S.n ? '묘묘가 기다렸어! 오늘 별 받기 ✦ (' + (S.n + 1) + '일째)' : '오늘의 별 받기 ✦') + '</button>';
   return '<div class="tp-card"><h4>묘묘에게 별 모아주기<span>' + (S.n ? S.n + '일 연속!' : '오늘부터 시작') + '</span></h4><p style="font-size:12.5px;color:var(--sub);margin-top:4px">하루 한 번 운세를 보면 별 1개 · 7일 연속이면 황금 부적 선물</p><div class="mstars">' + cells + '</div>' + btn + '</div>';
 }
-function renderToday(){ renderToday0(); SHARE_CACHE.today = null; const off = state.dayOff || 0; setTimeout(() => { prepShare('today', () => todayCanvas(state.R, off), '사주묘_오늘의운세.png'); if (starState().n >= 7) prepShare('star7', star7Canvas, '사주묘_7일완주.png'); }, 80); }
+function renderToday(){ renderToday0(); }
 function renderToday0(){
   const R = state.R, off = state.dayOff || 0, T = todayData(R, off), f = FACE(T.score);
   const lab = off === 0 ? '오늘의 운세' : off === -1 ? '어제의 운세' : off === 1 ? '내일의 운세' : (off > 0 ? off + '일 뒤 운세' : (-off) + '일 전 운세');
@@ -2388,7 +2436,7 @@ function mValidate(p, who){
   if (p.time && !/^\d{2}:\d{2}$/.test(p.time)) return who + ' 태어난 시간을 확인해 주세요.';
   const e = validate({...p, unknownTime: !p.time}); return e ? who + ': ' + e : '';
 }
-function renderMatchResult(){ renderMatchResult0(); SHARE_CACHE.match = null; setTimeout(() => { try { matchImage(); cvFile(SHARE_CACHE.mcv, '사주묘_궁합.png').then(f => { SHARE_CACHE.match = f; }); } catch(e){} }, 80); }
+function renderMatchResult(){ renderMatchResult0(); }
 function renderMatchResult0(){
   const {RA, RB, M} = state.mR, mode = state.mMode || 'yeon';
   const X = matchTexts(M, RA, RB, mode), yeon = mode === 'yeon';
@@ -2441,7 +2489,7 @@ function matchImage(){
     x.textAlign = 'left'; x.fillStyle = '#fff'; x.font = F(32, 700); x.fillText(n, bx, by); x.textAlign = 'right'; x.fillText(String(v), bx + 360, by);
     x.fillStyle = 'rgba(255,255,255,.25)'; rr(bx, by + 16, 360, 12, 6); x.fill(); x.fillStyle = '#FFE3A8'; rr(bx, by + 16, Math.max(12, 360 * v / 100), 12, 6); x.fill(); });
   x.textAlign = 'center'; x.fillStyle = 'rgba(255,255,255,.85)'; x.font = F(32, 700); x.fillText('사주묘 · ' + MYO_URL.replace('https://', '').replace(/\/$/, ''), W / 2, 1300);
-  SHARE_CACHE.mcv = cv;
+  drawFaceSync(x, yeon ? 'joy' : 'worry', W - 112, 112, 150, '#FFE3A8');
   return cv.toDataURL('image/png');
 }
 function openMPick(who){
@@ -2626,9 +2674,7 @@ document.addEventListener('click', e => {
     case 'mShare': {
       const {RA, RB, M} = state.mR, md = state.mMode || 'yeon', X = matchTexts(M, RA, RB, md);
       const txt = `${RA.inp.name || '나'} × ${RB.inp.name || '상대'} ${md === 'yeon' ? '인연' : '악연'} 지수 ${X.score}점, "${X.title}"! 사주묘에서 우리 사이도 확인해 보세요.`;
-      const url = SHARE_URL.match;
-      if (SHARE_CACHE.match) shareFile(SHARE_CACHE.match, '사주묘 · 인연·악연 궁합', txt, url);
-      else { matchImage(); cvFile(SHARE_CACHE.mcv, '사주묘_궁합.png').then(f => shareFile(f, '사주묘 · 인연·악연 궁합', txt, url)); }
+      shareNow(matchImage(), '사주묘_' + (md === 'yeon' ? '인연' : '악연') + '궁합.png', '사주묘 · 인연·악연 궁합', txt, SHARE_URL.match);
       break;
     }
     case 'mImg': { const src = matchImage(); const nm = `사주묘_${(state.mMode || 'yeon') === 'yeon' ? '인연' : '악연'}궁합.png`;
@@ -2645,12 +2691,10 @@ document.addEventListener('click', e => {
     case 'starGet': { const S = starState(); if (S.last !== kstDay(0)){ S.n = (S.n || 0) + 1; S.last = kstDay(0); try { localStorage.setItem('myo_stars', JSON.stringify(S)); } catch(e){} toast(S.n >= 7 ? '황금 부적을 받았어요! 냐옹 ✦' : '별 ' + S.n + '개째! 내일도 와 줘, 냐옹'); } const y = scrollY; renderToday(); window.scrollTo(0, y); break; }
     case 'tShare': { const T = todayData(state.R, state.dayOff || 0);
       const txt = '오늘 내 운세는 ' + T.score + '점, "' + T.txt.t + '" 고양이 점술사 묘묘가 봐주는 사주묘에서 너의 오늘도 확인해 봐!';
-      if (SHARE_CACHE.today) shareFile(SHARE_CACHE.today, '사주묘 · 오늘의 운세', txt, SHARE_URL.today);
-      else todayCanvas(state.R, state.dayOff || 0).then(cv => cvFile(cv, '사주묘_오늘의운세.png')).then(f => shareFile(f, '사주묘 · 오늘의 운세', txt, SHARE_URL.today));
+      shareNow(todayImage(state.R, state.dayOff || 0), '사주묘_오늘의운세.png', '사주묘 · 오늘의 운세', txt, SHARE_URL.today);
       break; }
     case 'starShare': { const txt = '묘묘 챌린지 7일 완주! 일주일 동안 매일 운세 보고 황금 부적까지 받았어 🏆 너도 사주묘에서 도전해 봐!';
-      if (SHARE_CACHE.star7) shareFile(SHARE_CACHE.star7, '사주묘 · 7일 완주', txt, SHARE_URL.star7);
-      else star7Canvas().then(cv => cvFile(cv, '사주묘_7일완주.png')).then(f => shareFile(f, '사주묘 · 7일 완주', txt, SHARE_URL.star7));
+      shareNow(star7Image(), '사주묘_7일완주.png', '사주묘 · 7일 완주', txt, SHARE_URL.star7);
       break; }
     case 'info': e.stopPropagation(); openInfo(t.dataset.key); break;
     case 'city': openCity(); break;
