@@ -869,6 +869,8 @@ footer b{font-family:var(--serif)}footer b:before{color:var(--pink)}
 .feat .f-star{background:linear-gradient(135deg,#2A1A4A,#4A1F35)}
 .shop{margin-top:34px}
 </style>
+<style id="myo-v22">@media (max-width:440px){.form .dt select{width:72px;padding:0 6px 0 12px;font-size:15px;background-position:right 8px center}.form .dt #f-time{flex:0 0 86px}.form .dt .inp{font-size:16px;padding:0 4px}}
+#f-err{font-weight:700}.toast{bottom:86px;width:max-content;max-width:calc(100vw - 40px);text-align:center;line-height:1.5}</style>
 <style id="myo-v21">
 .taste{margin-top:26px;border-radius:22px;background:var(--card);border:1px solid rgba(226,190,140,.28);padding:16px;text-align:left}
 .tt-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
@@ -1534,7 +1536,7 @@ function renderForm(){
       <span style="display:inline-flex;align-items:center;gap:6px"><label class="chk"><input type="checkbox" id="f-ya" ${d.yajasi?'checked':''}><span class="box"></span>야자시/조자시</label>${qBtn('yajasi')}</span>
     </div>
     <div class="f-label">도시</div>
-    <div class="city" data-act="city"><input class="inp" id="f-city" readonly placeholder="도시명을 입력하세요" value="${esc(d.city)}"><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="11" cy="11" r="8.5" stroke="#968F88" stroke-width="2" fill="none"/><path d="M17.5 17.5l6 6" stroke="#968F88" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <div class="city" data-act="city"><input class="inp" id="f-city" readonly placeholder="모르면 비워 두세요 (서울 기준)" value="${esc(d.city)}"><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="11" cy="11" r="8.5" stroke="#968F88" stroke-width="2" fill="none"/><path d="M17.5 17.5l6 6" stroke="#968F88" stroke-width="2" stroke-linecap="round"/></svg></div>
     <div class="err" id="f-err"></div></div>
     <div class="bottom-btns">
       <button class="btn y" id="f-submit" data-act="submit">묘묘에게 보여주기</button>
@@ -1546,7 +1548,7 @@ function renderForm(){
     s.name = $('#f-name').value.trim(); s.cal = $('#f-cal').value; s.date = $('#f-date').value; s.time = $('#f-time').value;
     s.unknownTime = $('#f-unk').checked; s.yajasi = $('#f-ya').checked;
     $('#f-time').disabled = s.unknownTime;
-    $('#f-submit').disabled = !(s.name && /^\d{4}\/\d{2}\/\d{2}$/.test(s.date) && (s.unknownTime || /^\d{2}:\d{2}$/.test(s.time)) && s.city);
+    $('#f-submit').disabled = false; const fe = $('#f-err'); if (fe) fe.textContent = '';
   };
   const fmt = (el, kind) => el.addEventListener('input', () => {
     let v = el.value.replace(/\D/g,'');
@@ -2700,8 +2702,12 @@ document.addEventListener('click', e => {
     case 'city': openCity(); break;
     case 'pickCity': state.draft.city = t.dataset.city; $('#f-city').value = t.dataset.city; closeModal(); $('#f-name').dispatchEvent(new Event('input')); break;
     case 'submit': {
-      const s = state.draft; const err = validate(s);
-      if (err){ $('#f-err').textContent = err; return; }
+      const s = state.draft;
+      const pre = !s.name ? ['이름(또는 별명)을 입력해 주세요.', '#f-name'] : !/^\d{4}\/\d{2}\/\d{2}$/.test(s.date) ? ['생년월일 8자리를 입력해 주세요. (예: 1998/04/12)', '#f-date'] : (!s.unknownTime && !/^\d{2}:\d{2}$/.test(s.time)) ? ['태어난 시간을 입력하거나 \'시간 모름\'에 체크해 주세요.', '#f-time'] : null;
+      if (pre){ $('#f-err').textContent = pre[0]; toast(pre[0]); const el = $(pre[1]); if (el){ el.focus(); el.scrollIntoView({block: 'center'}); } return; }
+      if (!s.city){ s.city = '서울특별시'; const ci = $('#f-city'); if (ci) ci.value = s.city; }
+      const err = validate(s);
+      if (err){ $('#f-err').textContent = err; toast(err); return; }
       state.input = {...s}; state.R = compute(state.input); state.selYear = null; state.selDae = null; state.dayOff = 0; state.chip = '궁성'; state.calY = state.calM = null;
       go('/confirm'); break;
     }
