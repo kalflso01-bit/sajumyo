@@ -869,6 +869,31 @@ footer b{font-family:var(--serif)}footer b:before{color:var(--pink)}
 .feat .f-star{background:linear-gradient(135deg,#2A1A4A,#4A1F35)}
 .shop{margin-top:34px}
 </style>
+<style id="myo-v21">
+.taste{margin-top:26px;border-radius:22px;background:var(--card);border:1px solid rgba(226,190,140,.28);padding:16px;text-align:left}
+.tt-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.tt-h small{display:block;font-size:11.5px;color:var(--pink);font-weight:800}
+.tt-h b{display:block;font-size:17px;font-weight:800;margin-top:2px;color:var(--ink)}.tt-h b span{font-family:var(--serif);color:var(--gold);font-size:15px;margin-left:4px}
+.tt-d{font-size:12px;color:var(--sub);background:var(--soft);border-radius:99px;padding:3px 10px;white-space:nowrap}
+.tt-s{font-size:12.5px;color:var(--sub);margin:6px 0 10px;max-width:none}
+.tti-g{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tti{background:var(--soft2);border:1px solid var(--line);border-radius:12px;padding:9px 10px;position:relative;min-width:0}
+.tti b{display:block;font-size:13px;font-weight:800;color:var(--ink)}.tti b i{font-style:normal;font-size:10.5px;color:var(--gold);margin-left:3px}
+.tti small{display:block;font-size:11px;color:var(--sub);margin-top:3px;line-height:1.35;padding-right:2px}
+.tti em{position:absolute;right:8px;top:9px;font-style:normal;font-size:8.5px;color:var(--gold);letter-spacing:-.5px}.tti em span{color:#5C3A4C}
+.tti.up{border-color:rgba(242,167,184,.5)}.tti.up b i{color:var(--pink)}.tti.dn b i{color:#C79AA8}
+.tt-go{display:flex;width:100%;align-items:center;justify-content:center;height:46px;margin-top:12px;border-radius:14px;background:var(--pink);color:#26111D;font-weight:800;font-size:14px}
+.remind{display:flex;gap:12px;align-items:center;width:100%;margin-top:14px;padding:12px 14px;border-radius:18px;background:linear-gradient(120deg,#5A2440,#3A1A33);border:1px solid rgba(242,167,184,.5);text-align:left}
+.remind img{width:48px;height:48px;border-radius:14px;object-fit:cover;flex:none}
+.remind span{flex:1;min-width:0}.remind b{display:block;font-size:14.5px;font-weight:800;color:var(--ink)}.remind small{display:block;font-size:11.5px;color:#E3B9C8;margin-top:2px;line-height:1.4}
+.remind em{font-style:normal;color:var(--pink);font-size:22px}
+.reco{display:flex;gap:12px;align-items:center;margin-top:16px;padding:14px;border-radius:18px;background:linear-gradient(120deg,#5A2440,#33192A);border:1.5px solid var(--pink);text-decoration:none;color:var(--ink)}
+.reco img{width:50px;height:50px;border-radius:50%;object-fit:cover;object-position:50% 30%;flex:none;border:1.5px solid var(--gold)}
+.reco span{flex:1;min-width:0}.reco i{font-style:normal;font-size:10.5px;font-weight:800;color:#26111D;background:var(--pink);border-radius:6px;padding:1px 6px}
+.reco b{display:block;font-size:15px;font-weight:800;margin-top:5px}.reco small{display:block;font-size:12px;color:#E3B9C8;margin-top:2px;line-height:1.45}
+.reco em{font-style:normal;color:var(--pink);font-weight:800}
+.room-page .reco{margin-top:28px}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -1233,15 +1258,99 @@ function render(){
   $('.back').style.visibility = route === '/' ? 'hidden' : 'visible';
   $('.fuk').style.display = route === '/' ? '' : 'none';
   updateNav(route);
-  if (route === '/today') return state.input ? renderToday() : needInput();
+  if (route === '/today') return state.input ? renderToday() : needInput('/today');
+  if (route.startsWith('/room/') && !state.input) return needInput(route);
   if (route === '/form') return renderForm();
   if (route === '/confirm' && state.input) return renderConfirm();
   if (route === '/result' && state.input) return renderResult();
   if (route === '/charms') return renderCharms();
   if (route === '/match/result' && state.mR) return renderMatchResult();
+  if (route === '/result' && !state.input) return needInput('/result');
   if (route.startsWith('/match')) return renderMatchForm();
   if (route.startsWith('/room/') && state.input){ state.fromRoom = true; return renderRoom(route.slice(6)); }
   renderLanding();
+}
+
+/* ===== 사주묘 v2.1 추가 기능 ===== */
+const SHARE_URL = { today: MYO_URL + 'today', match: MYO_URL + 'match', star7: MYO_URL + '?utm_source=share&utm_campaign=star7' };
+function setNext(r){ try { if (r) sessionStorage.setItem('myo_next', r); else sessionStorage.removeItem('myo_next'); } catch(e){} }
+function takeNext(){ let r = null; try { r = sessionStorage.getItem('myo_next'); sessionStorage.removeItem('myo_next'); } catch(e){} return r; }
+/* 공유: 이미지 파일 첨부 → 안 되면 이미지 저장 + 문구 복사 */
+function cvFile(cv, name){ return new Promise(res => cv.toBlob(b => res(b ? new File([b], name, {type: 'image/png'}) : null), 'image/png')); }
+async function shareFile(file, title, text, url){
+  const full = text + '\n' + url;
+  try {
+    if (file && navigator.canShare && navigator.canShare({files: [file]})){ await navigator.share({title, text: full, files: [file]}); return; }
+    if (file){ const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); }
+    if (navigator.clipboard){ await navigator.clipboard.writeText(full); toast(file ? '이미지를 저장하고 공유 문구를 복사했어요.' : '공유 문구를 복사했어요.'); }
+    else if (navigator.share) await navigator.share({title, text, url});
+  } catch(e){ if (e && e.name === 'AbortError') return; try { if (navigator.share) await navigator.share({title, text, url}); } catch(e2){} }
+}
+const SHARE_CACHE = {};
+function loadImg(src){ return new Promise((res, rej) => { const im = new Image(); im.crossOrigin = 'anonymous'; im.onload = () => res(im); im.onerror = rej; im.src = src; }); }
+function cvBase(W, H){
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
+  const g = x.createRadialGradient(W / 2, 0, 60, W / 2, H * .35, H * 1.1); g.addColorStop(0, '#5A2440'); g.addColorStop(.55, '#33182A'); g.addColorStop(1, '#1A0B13');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+  x.F = (s, w, serif) => (w || 800) + ' ' + s + 'px ' + (serif ? '"Gowun Batang","Noto Serif KR","Nanum Myeongjo",serif' : '"Pretendard Variable",Pretendard,"Malgun Gothic",sans-serif');
+  x.rr = (bx, by, bw, bh, r) => { x.beginPath(); x.moveTo(bx + r, by); x.arcTo(bx + bw, by, bx + bw, by + bh, r); x.arcTo(bx + bw, by + bh, bx, by + bh, r); x.arcTo(bx, by + bh, bx, by, r); x.arcTo(bx, by, bx + bw, by, r); x.closePath(); };
+  x.mark = () => { x.textAlign = 'center'; x.fillStyle = 'rgba(251,239,239,.8)'; x.font = x.F(32, 700); x.fillText('사주묘 · myo.koreaunse.com', W / 2, H - 56); };
+  return [cv, x];
+}
+function drawFace(x, im, cx, cy, s){ x.save(); x.beginPath(); x.arc(cx, cy, s / 2, 0, Math.PI * 2); x.closePath(); x.clip(); x.drawImage(im, cx - s / 2, cy - s / 2, s, s); x.restore(); x.strokeStyle = '#E2BE8C'; x.lineWidth = 8; x.beginPath(); x.arc(cx, cy, s / 2, 0, Math.PI * 2); x.stroke(); }
+async function todayCanvas(R, off){
+  const T = todayData(R, off), f = FACE(T.score); const W = 1080, H = 1350; const [cv, x] = cvBase(W, H);
+  const im = await loadImg('img/' + f + '.jpg');
+  x.textAlign = 'center'; x.fillStyle = '#E2BE8C'; x.font = x.F(34, 700); x.fillText('✦ 묘묘가 봐준 오늘의 운세 ✦', W / 2, 110);
+  x.fillStyle = 'rgba(251,239,239,.75)'; x.font = x.F(32, 600); x.fillText(T.m + '월 ' + T.d + '일 ' + '일월화수목금토'[T.w] + '요일 · ' + ST[T.g.s] + BR[T.g.b] + '일', W / 2, 165);
+  drawFace(x, im, W / 2, 400, 360);
+  x.fillStyle = '#F2A7B8'; x.font = x.F(210, 800); x.fillText(String(T.score), W / 2 - 40, 790); x.font = x.F(54, 700); x.fillStyle = 'rgba(251,239,239,.75)'; x.fillText('점', W / 2 + 150, 790);
+  x.fillStyle = '#FBEFEF'; x.font = x.F(58, 700, true); x.fillText(T.txt.t, W / 2, 890);
+  const nm = ['재물운', '애정운', '일·학업운', '건강운'];
+  x.fillStyle = 'rgba(255,255,255,.07)'; x.rr(110, 950, 860, 210, 32); x.fill(); x.strokeStyle = 'rgba(226,190,140,.35)'; x.lineWidth = 2; x.stroke();
+  nm.forEach((n, k) => { const cx = k % 2 ? 560 : 160, cy = 1030 + Math.floor(k / 2) * 80; x.textAlign = 'left'; x.fillStyle = '#FBEFEF'; x.font = x.F(36, 700); x.fillText(n, cx, cy);
+    x.fillStyle = '#E2BE8C'; x.font = x.F(34, 700); x.fillText('★★★★★'.slice(0, T.stars[k]) + '☆☆☆☆☆'.slice(0, 5 - T.stars[k]), cx + 190, cy); });
+  x.textAlign = 'center'; x.fillStyle = 'rgba(251,239,239,.85)'; x.font = x.F(32, 600); x.fillText('행운의 색 ' + EL_COLOR[T.low] + ' · 숫자 ' + EL_NUM[T.low] + ' · ' + EL_DIR[T.low], W / 2, 1220);
+  x.mark(); return cv;
+}
+async function star7Canvas(){
+  const W = 1080, H = 1350; const [cv, x] = cvBase(W, H); const im = await loadImg('img/joy.jpg');
+  x.textAlign = 'center'; x.fillStyle = '#E2BE8C'; x.font = x.F(36, 700); x.fillText('✦ 묘묘 챌린지 ✦', W / 2, 120);
+  x.fillStyle = '#FBEFEF'; x.font = x.F(92, 800, true); x.fillText('7일 완주 🏆', W / 2, 250);
+  drawFace(x, im, W / 2, 560, 420);
+  for (let k = 0; k < 7; k++){ const cx = 165 + k * 125, cy = 900; x.fillStyle = k < 6 ? '#E2BE8C' : '#F2A7B8'; x.beginPath(); x.arc(cx, cy, 50, 0, Math.PI * 2); x.fill(); x.fillStyle = '#26111D'; x.font = x.F(k < 6 ? 52 : 46, 800, k === 6); x.fillText(k < 6 ? '★' : '符', cx, cy + 18); }
+  x.fillStyle = '#FBEFEF'; x.font = x.F(44, 700); x.fillText('일주일 동안 하루도 빠짐없이', W / 2, 1050); x.fillText('묘묘에게 별을 모아줬어요!', W / 2, 1112);
+  x.fillStyle = '#F2A7B8'; x.font = x.F(34, 700); x.fillText('황금 부적 획득 · ' + kstDay(0).replace(/-/g, '.'), W / 2, 1190);
+  x.mark(); return cv;
+}
+async function prepShare(key, maker, name){ try { SHARE_CACHE[key] = await cvFile(await maker(), name); } catch(e){ SHARE_CACHE[key] = null; } }
+/* 입력 없이 보는 맛보기: 오늘의 일진 + 12띠 한 줄 */
+function ttiFortune(b, tb){
+  const has = (a, c, T) => T.some(v => (a === v[0] && c === v[1]) || (a === v[1] && c === v[0]));
+  if ((b + tb) % 12 === 1) return [5, '귀인운', '마음 맞는 사람을 만나기 쉬운 날'];
+  if (Math.abs(b - tb) === 6) return [2, '변화운', '이동·약속 변경이 생기기 쉬워요'];
+  if (has(b, tb, [[0,3],[2,5],[5,8],[2,8],[1,10],[10,7],[1,7]]) || (b === tb && [4,6,9,11].includes(b))) return [2, '확인운', '작은 실수 조심, 두 번 확인!'];
+  if (has(b, tb, [[0,7],[1,6],[2,9],[3,8],[11,4],[5,10]])) return [2, '예민운', '말 한마디에 마음 상하기 쉬워요'];
+  if ([[8,0,4],[11,3,7],[2,6,10],[5,9,1]].some(G => G.includes(b) && G.includes(tb) && b !== tb)) return [4, '협력운', '함께하는 일이 술술 풀려요'];
+  if (b === tb) return [4, '자기운', '내 페이스대로 밀고 나가요'];
+  if (has(b, tb, [[2,5],[3,4],[8,11],[9,10]]) || has(b, tb, [[0,9],[1,4],[2,11],[3,6],[8,5],[10,7]])) return [3, '조율운', '계획이 어긋나도 대안이 있어요'];
+  return [3, '평온운', '무난하게 흘러가는 하루'];
+}
+function tasteBlock(){
+  const t = new Date(Date.now() + 9 * 3600000), y = t.getUTCFullYear(), m = t.getUTCMonth() + 1, d = t.getUTCDate();
+  const g = g60(dayGanji(y, m, d));
+  const rows = BR.map((_, b) => { const [s, k, l] = ttiFortune(b, g.b); return '<div class="tti' + (s >= 4 ? ' up' : s <= 2 ? ' dn' : '') + '"><b>' + ANIMAL[b] + '띠 <i>' + k + '</i></b><small>' + l + '</small><em>' + '★★★★★'.slice(0, s) + '<span>' + '★★★★★'.slice(0, 5 - s) + '</span></em></div>'; }).join('');
+  return '<div class="taste"><div class="tt-h"><div><small>입력 없이 바로 보는</small><b>오늘의 일진 · ' + ST[g.s] + BR[g.b] + '일 <span>' + STH[g.s] + BRH[g.b] + '日</span></b></div><span class="tt-d">' + m + '/' + d + ' ' + '일월화수목금토'[t.getUTCDay()] + '</span></div>'
+    + '<p class="tt-s">태어난 해의 띠로 보는 오늘의 한 줄 운세예요.</p><div class="tti-g">' + rows + '</div>'
+    + '<button class="tt-go" data-act="tab" data-k="today">내 일간으로 더 정확하게 보기 →</button></div>';
+}
+/* 별 모으기 리마인드 */
+function starRemind(){ const S = starState(); if (S.n > 0 && S.n < 7 && S.last === kstDay(-1)) return '<button class="remind" data-act="tab" data-k="today"><img src="img/wish.jpg" alt=""><span><b>묘묘가 기다려, 오늘 별 받아가!</b><small>' + S.n + '일 연속 중 · 오늘 안 받으면 처음부터 다시 시작해요</small></span><em>›</em></button>'; return ''; }
+/* 상황별 추천 상품 */
+function recoCard(tag, why){
+  if (SHOP.mode !== 'products') return '';
+  const it = SHOP.items.find(v => v.tag === tag); if (!it) return '';
+  return '<a class="reco" href="' + it.url + '" target="_blank" rel="noopener noreferrer"><img src="img/curious.jpg" alt=""><span><i>묘묘 추천</i><b>' + it.title + '</b><small>' + why + '</small></span><em>↗</em></a>';
 }
 
 function renderLanding(){
@@ -1252,13 +1361,15 @@ function renderLanding(){
       ${me ? '<button class="btn y" data-act="nav" data-to="/result">' + esc(me.name) + '님 사주 다시 보기</button>' : '<button class="btn y" data-act="start">묘묘에게 내 사주 보여주기</button>'}
       ${me || saved.length ? '<div class="sub2">' + (me ? '<button data-act="start">새 사주 보기</button>' : '') + (saved.length ? '<button data-act="load">저장된 사주 불러오기</button>' : '') + '</div>' : ''}
     </div>
+    ${starRemind()}
     <div class="msec"><b>묘묘의 오늘 추천</b><span>모두 무료</span></div>
     <div class="mtiles">
       <button class="mtile" data-act="tab" data-k="today"><span class="h">卯</span><span><b>오늘의 운세</b><small>점수 · 행운 처방</small></span></button>
       <button class="mtile p" data-act="match" data-mode="yeon"><span class="h">緣</span><span><b>인연 · 악연</b><small>두 사람 궁합 카드</small></span></button>
       <button class="mtile" data-act="tab" data-k="star"><span class="h">星</span><span><b>별자리 × 사주</b><small>두 하늘 겹쳐보기</small></span></button>
-      <button class="mtile" data-act="tab" data-k="charms"><span class="h">符</span><span><b>행운 부적</b><small>받아서 배경화면으로</small></span></button>
+      <button class="mtile" data-act="tab" data-k="charms"><span class="h">符</span><span><b>행운 부적</b><small>NEW 합격 부적</small></span></button>
     </div>
+    ${tasteBlock()}
   </section>${shopBlock(true)}<section class="pad"><p class="mnote">한국천문연구원(KASI) 절기·음력 기준 · 서머타임·출생지 시차 보정<br>사주묘 by 운세명리</p></section>`;
 }
 const FACE = s => s >= 80 ? 'joy' : s >= 68 ? 'curious' : s >= 56 ? 'wish' : 'worry';
@@ -1268,7 +1379,7 @@ function updateNav(route){
   const k = route === '/' ? 'home' : route === '/today' ? 'today' : route.startsWith('/match') ? 'match' : route === '/charms' ? 'charms' : 'me';
   document.querySelectorAll('#mnav button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
 }
-function needInput(){ toast('먼저 묘묘에게 생년월일을 알려주세요'); state.draft = blankInput(); go('/form'); }
+function needInput(next){ setNext(next || null); toast('먼저 묘묘에게 생년월일을 알려주세요'); state.draft = blankInput(); go('/form'); }
 function myoSayResult(R){
   const mx = R.elPct.indexOf(Math.max(...R.elPct)), mn = R.elPct.indexOf(Math.min(...R.elPct));
   return `<div class="myo-say"><img src="img/curious.jpg" alt=""><p><small>묘묘의 첫인상</small>음… ${esc(R.inp.name || '너')}님은 <b>${DM_NATURE[R.dm]}</b> 같은 사람이야. ${EL[mx]}(${ELH[mx]}) 기운이 가장 많은 ${R.LV[R.lv]} 사주고, ${R.elPct[mn] === 0 ? '비어 있는' : '조금 약한'} ${EL[mn]}(${ELH[mn]}) 기운은 오늘의 행운 처방으로 채워 보자, 냐옹.</p></div>`;
@@ -1287,12 +1398,13 @@ function starState(){
 function starCard(){
   const S = starState(), got = S.last === kstDay(0);
   const cells = [1,2,3,4,5,6,7].map(k => k < 7 ? '<i class="' + (k <= S.n ? 'got' : '') + '">★</i>' : '<i class="gift ' + (S.n >= 7 ? 'got' : '') + '">符</i>').join('');
-  const btn = S.n >= 7 ? '<button class="mbtn2 pk" data-act="nav" data-to="/charms">황금 부적 받으러 가기 ✦</button>'
+  const btn = S.n >= 7 ? '<button class="mbtn2 pk" data-act="nav" data-to="/charms">황금 부적 받으러 가기 ✦</button><button class="mbtn3" data-act="starShare" style="margin-top:10px">7일 완주 인증 카드 공유하기 🏆</button>'
     : got ? '<button class="mbtn2" disabled>오늘의 별은 받았어요 · 내일 또 만나요</button>'
-    : '<button class="mbtn2" data-act="starGet">오늘의 별 받기 ✦</button>';
+    : '<button class="mbtn2" data-act="starGet">' + (S.n ? '묘묘가 기다렸어! 오늘 별 받기 ✦ (' + (S.n + 1) + '일째)' : '오늘의 별 받기 ✦') + '</button>';
   return '<div class="tp-card"><h4>묘묘에게 별 모아주기<span>' + (S.n ? S.n + '일 연속!' : '오늘부터 시작') + '</span></h4><p style="font-size:12.5px;color:var(--sub);margin-top:4px">하루 한 번 운세를 보면 별 1개 · 7일 연속이면 황금 부적 선물</p><div class="mstars">' + cells + '</div>' + btn + '</div>';
 }
-function renderToday(){
+function renderToday(){ renderToday0(); SHARE_CACHE.today = null; const off = state.dayOff || 0; setTimeout(() => { prepShare('today', () => todayCanvas(state.R, off), '사주묘_오늘의운세.png'); if (starState().n >= 7) prepShare('star7', star7Canvas, '사주묘_7일완주.png'); }, 80); }
+function renderToday0(){
   const R = state.R, off = state.dayOff || 0, T = todayData(R, off), f = FACE(T.score);
   const lab = off === 0 ? '오늘의 운세' : off === -1 ? '어제의 운세' : off === 1 ? '내일의 운세' : (off > 0 ? off + '일 뒤 운세' : (-off) + '일 전 운세');
   const st = n => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
@@ -1307,6 +1419,7 @@ function renderToday(){
     <div class="msec"><b>묘묘의 행운 처방</b><span>부족한 ${EL[T.low]}(${ELH[T.low]}) 기운 채우기</span></div>
     <div class="tp-lucky" style="margin-top:0"><div><small>행운의 색</small><b>${EL_COLOR[T.low]}</b></div><div><small>행운의 숫자</small><b>${EL_NUM[T.low]}</b></div><div><small>좋은 방향</small><b>${EL_DIR[T.low]}</b></div><div><small>좋은 시간</small><b>${gh[0]}<br><span style="font-size:10.5px;color:var(--sub);font-weight:600">${gh[1] || ''}</span></b></div></div>
     ${off === 0 ? starCard() : ''}
+    ${T.stars[1] <= 2 ? recoCard('연애', '애정운이 ★' + T.stars[1] + '개인 날, 연애 고민은 연화아씨에게 물어봐') : ''}
     <div class="tp-card"><h4>점수에 따라 묘묘 표정이 바뀌어요</h4><div class="tp-faces">${[['joy','80점↑ 신남'],['curious','68점↑ 궁금'],['wish','56점↑ 소원'],['worry','그 아래 시무룩']].map(x => '<div class="' + (x[0] === f ? 'on' : '') + '"><img src="img/' + x[0] + '.jpg" alt="">' + x[1] + '</div>').join('')}</div></div>
     <button class="mbtn3" data-act="tShare">오늘의 운세 친구에게 공유하기</button>
     <button class="btn g" data-act="nav" data-to="/result" style="margin-top:10px;height:50px;font-size:15px">내 사주 결과 보기</button>
@@ -1962,11 +2075,11 @@ function renderRoom(k){
   const R = state.R; const r = ROOMS.find(x => x.k === k); if (!r) return go('/result');
   let body = '', sub = '';
   if (k === 'gulja'){ sub = '표에 나온 십성·12운성·12신살·지장간이 내 사주에서 어떤 뜻인지 자리별로 풀어 드려요.'; body = `<div id="gulja-wrap">${guljaBody(R)}</div>` + consultCta('내 사주를 더 깊이 알고 싶다면'); }
-  else if (k === 'sinsal'){ sub = '내 사주에 있는 길성과 신살이 인생에서 어떻게 작용하는지 알려 드려요.'; body = sinsalRoomBody(R) + consultCta('내 신살이 연애·재물에 미치는 영향이 궁금하다면'); }
+  else if (k === 'sinsal'){ sub = '내 사주에 있는 길성과 신살이 인생에서 어떻게 작용하는지 알려 드려요.'; body = sinsalRoomBody(R) + (sinsalList(R).some(v => v.info[1] === 'b') ? recoCard('고민상담', '마음에 걸리는 신살이 있다면, 연화선녀에게 인생의 갈림길을 물어봐') : '') + consultCta('내 신살이 연애·재물에 미치는 영향이 궁금하다면'); }
   else if (k === 'star'){ sub = '태어난 순간 태양·달·동쪽 지평선이 머물던 황도 12궁으로 보는 나의 별자리예요.'; body = starRoomBody(R) + consultCta('별자리와 사주로 나를 더 깊이 알고 싶다면'); }
   else if (k === 'hap'){ sub = '사주 글자끼리 당기고(합) 부딪히는(충) 관계와 기둥별 의미(궁성)를 봐요.'; body = `<section class="band" style="margin:18px 0 0"><div id="band-body">${bandBody(R)}</div></section>`; }
   else if (k === 'ohaeng'){ sub = '다섯 가지 기운의 비율과 내 사주의 강약을 봐요.'; body = (ohaengBlock(R) + myElBlock(R)).replace(/class="sec pad"/g, 'class="sec"'); }
-  else if (k === 'luck'){ sub = '10년 단위 대운을 누르면 그 기간의 연운·월운으로 바뀌어요.'; body = `<div id="luck-wrap">${luckBlock(R).replace('<section class="pad">', '<section>')}</div>`; }
+  else if (k === 'luck'){ sub = '10년 단위 대운을 누르면 그 기간의 연운·월운으로 바뀌어요.'; body = `<div id="luck-wrap">${luckBlock(R).replace('<section class="pad">', '<section>')}</div>` + recoCard('평생사주', '대운과 연운의 흐름을 평생사주로 자세히 풀어보고 싶다면'); }
   else if (k === 'cal'){ sub = '날짜별 간지(일진)와 음력, 절기를 함께 봐요.'; body = `<div id="cal-wrap">${calendarBlock(R).replace('<section class="sec pad" id="cal">', '<section id="cal">').replace(/<div class="sec-t"[^>]*>일진 달력<\/div>/, '')}</div>`; }
   view.innerHTML = `<section class="pad room-page"><span class="cf-step">✦ ${esc(R.inp.name)}님의 사주 방</span><h2 class="ch-t">${r.t}</h2><p class="cf-sub">${sub}</p>${body}${roomNav(k)}</section>`;
   if (k === 'luck') fixScroll();
@@ -2275,7 +2388,8 @@ function mValidate(p, who){
   if (p.time && !/^\d{2}:\d{2}$/.test(p.time)) return who + ' 태어난 시간을 확인해 주세요.';
   const e = validate({...p, unknownTime: !p.time}); return e ? who + ': ' + e : '';
 }
-function renderMatchResult(){
+function renderMatchResult(){ renderMatchResult0(); SHARE_CACHE.match = null; setTimeout(() => { try { matchImage(); cvFile(SHARE_CACHE.mcv, '사주묘_궁합.png').then(f => { SHARE_CACHE.match = f; }); } catch(e){} }, 80); }
+function renderMatchResult0(){
   const {RA, RB, M} = state.mR, mode = state.mMode || 'yeon';
   const X = matchTexts(M, RA, RB, mode), yeon = mode === 'yeon';
   const badge = R => { const d = R.P[1]; return `<div class="pp"><div class="bd"><b>${STH[d.s]}${BRH[d.b]}</b><small>日柱</small></div><div class="nm">${esc(R.inp.name || (R === RA ? '나' : '상대'))}</div><div class="tt">${ANIMAL[R.P[3].b]}띠 · ${zName(astro(R).s)}</div></div>`; };
@@ -2298,6 +2412,7 @@ function renderMatchResult(){
     <div class="mshare"><button class="s1" data-act="mImg">↓ 결과 이미지 저장</button><button class="s2" data-act="mShare">친구에게 공유하기</button></div>
     <div class="mshare" style="margin-top:8px"><button class="s1" data-act="mMode" data-mode="${yeon ? 'ak' : 'yeon'}" data-again="1">${yeon ? '같은 사람으로 악연 보기' : '같은 사람으로 인연 보기'}</button><button class="s1" data-act="mSaveB">상대 정보 저장하기</button></div>
     <button class="btn g" data-act="mAgain" style="margin-top:10px;height:52px;font-size:16px">다른 사람과 다시 보기</button>
+    ${mode !== 'yeon' && X.score >= 70 ? recoCard('재회', '악연 지수 ' + X.score + '점, 이 인연을 계속 이어가도 될지 다온에게 물어봐') : ''}
     ${matchShop(mode)}
     <p class="disc">${yeon ? '사주 원국과 띠·별자리를 바탕으로 재미로 보는 궁합이에요.<br>실제 관계는 두 사람의 마음과 노력이 가장 중요해요.' : '재미로 보는 콘텐츠예요. 악연 지수가 높아도 노력하면 얼마든지 좋은 인연이 될 수 있어요.'}</p>
   </section>`;
@@ -2326,6 +2441,7 @@ function matchImage(){
     x.textAlign = 'left'; x.fillStyle = '#fff'; x.font = F(32, 700); x.fillText(n, bx, by); x.textAlign = 'right'; x.fillText(String(v), bx + 360, by);
     x.fillStyle = 'rgba(255,255,255,.25)'; rr(bx, by + 16, 360, 12, 6); x.fill(); x.fillStyle = '#FFE3A8'; rr(bx, by + 16, Math.max(12, 360 * v / 100), 12, 6); x.fill(); });
   x.textAlign = 'center'; x.fillStyle = 'rgba(255,255,255,.85)'; x.font = F(32, 700); x.fillText('사주묘 · ' + MYO_URL.replace('https://', '').replace(/\/$/, ''), W / 2, 1300);
+  SHARE_CACHE.mcv = cv;
   return cv.toDataURL('image/png');
 }
 function openMPick(who){
@@ -2487,7 +2603,7 @@ document.addEventListener('click', e => {
   switch (a){
     case 'back': history.length > 1 ? history.back() : go('/'); break;
     case 'home': go('/'); break;
-    case 'start': state.draft = blankInput(); go('/form'); break;
+    case 'start': setNext(null); state.draft = blankInput(); go('/form'); break;
     case 'drawer': openDrawer(); break;
     case 'nav': closeModal(); if (t.dataset.to === '/form') state.draft = blankInput(); go(t.dataset.to); break;
     case 'close': closeModal(); break;
@@ -2510,9 +2626,9 @@ document.addEventListener('click', e => {
     case 'mShare': {
       const {RA, RB, M} = state.mR, md = state.mMode || 'yeon', X = matchTexts(M, RA, RB, md);
       const txt = `${RA.inp.name || '나'} × ${RB.inp.name || '상대'} ${md === 'yeon' ? '인연' : '악연'} 지수 ${X.score}점, "${X.title}"! 사주묘에서 우리 사이도 확인해 보세요.`;
-      const url = MYO_URL;
-      if (navigator.share) navigator.share({title: '사주묘 · 인연·악연 궁합', text: txt, url}).catch(() => {});
-      else if (navigator.clipboard) navigator.clipboard.writeText(txt + ' ' + url).then(() => toast('공유 문구를 복사했어요.'), () => toast('복사하지 못했어요.'));
+      const url = SHARE_URL.match;
+      if (SHARE_CACHE.match) shareFile(SHARE_CACHE.match, '사주묘 · 인연·악연 궁합', txt, url);
+      else { matchImage(); cvFile(SHARE_CACHE.mcv, '사주묘_궁합.png').then(f => shareFile(f, '사주묘 · 인연·악연 궁합', txt, url)); }
       break;
     }
     case 'mImg': { const src = matchImage(); const nm = `사주묘_${(state.mMode || 'yeon') === 'yeon' ? '인연' : '악연'}궁합.png`;
@@ -2521,7 +2637,7 @@ document.addEventListener('click', e => {
     case 'tab': { const k = t.dataset.k; closeModal();
       if (k === 'home') go('/');
       else if (k === 'charms') go('/charms');
-      else if (!state.input) needInput();
+      else if (!state.input) needInput(k === 'today' ? '/today' : k === 'star' ? '/room/star' : '/result');
       else if (k === 'today'){ state.dayOff = 0; go('/today'); }
       else if (k === 'star') go('/room/star');
       else go('/result');
@@ -2529,8 +2645,12 @@ document.addEventListener('click', e => {
     case 'starGet': { const S = starState(); if (S.last !== kstDay(0)){ S.n = (S.n || 0) + 1; S.last = kstDay(0); try { localStorage.setItem('myo_stars', JSON.stringify(S)); } catch(e){} toast(S.n >= 7 ? '황금 부적을 받았어요! 냐옹 ✦' : '별 ' + S.n + '개째! 내일도 와 줘, 냐옹'); } const y = scrollY; renderToday(); window.scrollTo(0, y); break; }
     case 'tShare': { const T = todayData(state.R, state.dayOff || 0);
       const txt = '오늘 내 운세는 ' + T.score + '점, "' + T.txt.t + '" 고양이 점술사 묘묘가 봐주는 사주묘에서 너의 오늘도 확인해 봐!';
-      if (navigator.share) navigator.share({title: '사주묘 · 오늘의 운세', text: txt, url: MYO_URL}).catch(() => {});
-      else if (navigator.clipboard) navigator.clipboard.writeText(txt + ' ' + MYO_URL).then(() => toast('공유 문구를 복사했어요.'), () => toast('복사하지 못했어요.'));
+      if (SHARE_CACHE.today) shareFile(SHARE_CACHE.today, '사주묘 · 오늘의 운세', txt, SHARE_URL.today);
+      else todayCanvas(state.R, state.dayOff || 0).then(cv => cvFile(cv, '사주묘_오늘의운세.png')).then(f => shareFile(f, '사주묘 · 오늘의 운세', txt, SHARE_URL.today));
+      break; }
+    case 'starShare': { const txt = '묘묘 챌린지 7일 완주! 일주일 동안 매일 운세 보고 황금 부적까지 받았어 🏆 너도 사주묘에서 도전해 봐!';
+      if (SHARE_CACHE.star7) shareFile(SHARE_CACHE.star7, '사주묘 · 7일 완주', txt, SHARE_URL.star7);
+      else star7Canvas().then(cv => cvFile(cv, '사주묘_7일완주.png')).then(f => shareFile(f, '사주묘 · 7일 완주', txt, SHARE_URL.star7));
       break; }
     case 'info': e.stopPropagation(); openInfo(t.dataset.key); break;
     case 'city': openCity(); break;
@@ -2541,7 +2661,7 @@ document.addEventListener('click', e => {
       state.input = {...s}; state.R = compute(state.input); state.selYear = null; state.selDae = null; state.dayOff = 0; state.chip = '궁성'; state.calY = state.calM = null;
       go('/confirm'); break;
     }
-    case 'toResult': go('/result'); break;
+    case 'toResult': { const nx = takeNext(); if (nx === '/today') state.dayOff = 0; go(nx || '/result'); } break;
     case 'edit': state.draft = {...state.input}; go('/form'); break;
     case 'band': state.bandOpen = !state.bandOpen; t.classList.toggle('closed', !state.bandOpen); $('#band-body').style.display = state.bandOpen ? '' : 'none'; break;
     case 'chip': state.chip = t.dataset.chip; $('#band-body').innerHTML = bandBody(state.R); break;
@@ -2568,7 +2688,7 @@ document.addEventListener('click', e => {
       localStorage.setItem('msr_profiles', JSON.stringify(list.slice(0, 50))); toast('만세력을 저장했어요.'); break;
     }
     case 'load': openSaved(); break;
-    case 'pickSaved': if (e.target.closest('.del')) return; { const p = loadSaved()[+t.dataset.i]; closeModal(); state.input = p; state.R = compute(p); state.selYear = null; state.selDae = null; state.dayOff = 0; state.chip = '궁성'; state.calY = state.calM = null; go('/result'); } break;
+    case 'pickSaved': if (e.target.closest('.del')) return; { const p = loadSaved()[+t.dataset.i]; closeModal(); state.input = p; state.R = compute(p); state.selYear = null; state.selDae = null; state.dayOff = 0; state.chip = '궁성'; state.calY = state.calM = null; go(takeNext() || '/result'); } break;
     case 'delSaved': { e.stopPropagation(); const list = loadSaved(); list.splice(+t.dataset.i, 1); localStorage.setItem('msr_profiles', JSON.stringify(list)); openSaved(); } break;
   }
 });
