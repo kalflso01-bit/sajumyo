@@ -915,7 +915,7 @@ footer b{font-family:var(--serif)}footer b:before{color:var(--pink)}
 .gment-q{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
 .gment-q button{display:flex;align-items:center;gap:7px;text-align:left;border-radius:12px;padding:9px 10px;background:var(--soft2);border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.35;min-width:0}
 .gment-q i{font-style:normal;flex:none;width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:13px;background:rgba(242,167,184,.16);color:var(--pink)}
-.gment.today{margin-top:14px}
+.gment.tday{margin-top:14px}
 /* 하단 탭바 */
 .mnav{position:fixed;left:0;right:0;bottom:0;z-index:40;height:66px;padding-bottom:env(safe-area-inset-bottom);display:flex;justify-content:center;background:rgba(20,8,15,.94);backdrop-filter:blur(10px);border-top:1px solid rgba(226,190,140,.2)}
 .mnav>div{display:flex;width:100%;max-width:720px;justify-content:space-around;align-items:center}
@@ -2155,7 +2155,7 @@ function renderToday0(){
     ${off === 0 ? starCard() : ''}
     ${T.stars[1] <= 2 ? recoCard('연애', '애정운이 ★' + T.stars[1] + '개인 날, 연애 고민은 연화아씨에게 물어봐') : ''}
     <div class="tp-card"><h4>점수에 따라 묘묘 표정이 바뀌어요</h4><div class="tp-faces">${[['joy','80점↑ 신남'],['curious','68점↑ 궁금'],['wish','56점↑ 소원'],['worry','그 아래 시무룩']].map(x => '<div class="' + (x[0] === f ? 'on' : '') + '"><img src="img/' + x[0] + '.jpg" alt="">' + x[1] + '</div>').join('')}</div></div>
-    ${gominEntry('today')}
+    ${gominEntry('tday')}
     <button class="mbtn3" data-act="tShare">오늘의 운세 친구에게 공유하기</button>
     <button class="btn g" data-act="nav" data-to="/result" style="margin-top:10px;height:50px;font-size:15px">내 사주 결과 보기</button>
     <p class="tp-foot">내 일간 ${ST[R.dm]}${EL[stEl(R.dm)]}${hasJong(EL[stEl(R.dm)]) ? '과' : '와'} 그날 일진의 관계로 보는 참고용 운세예요. 행운의 색·숫자·방향은 원국에서 가장 약한 기운(${EL[T.low]})을 채우는 쪽으로, 좋은 시간(${T.goodHour})은 그날 지지와 합이 되는 시간이에요.</p>
