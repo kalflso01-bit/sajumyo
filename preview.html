@@ -902,6 +902,20 @@ footer b{font-family:var(--serif)}footer b:before{color:var(--pink)}
 .gm-call a{display:flex;flex-direction:column;align-items:center;justify-content:center;height:62px;border-radius:14px;background:#8AA2F0;color:#1A1030!important;font-size:12px;text-decoration:none}
 .gm-call a b{font-size:20px;color:#1A1030;margin:0}
 .mnav button{min-width:50px}
+.wide.wq{background:linear-gradient(120deg,#6A2A4A,#3A1A33);border:1.5px solid var(--gold)}
+.wide .gq{width:52px;height:52px;border-radius:16px;background:var(--gold);color:#26111D;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:26px;flex:none}
+.wide.wq .ar{color:var(--gold)}.wide.wq .nw{background:var(--gold)}
+.gment{margin-top:22px;border-radius:22px;background:var(--card);border:1.5px solid rgba(226,190,140,.45);padding:14px;text-align:left}
+.gment-h{display:flex;gap:12px;align-items:center;width:100%;text-align:left}
+.gment-h img{width:54px;height:54px;border-radius:50%;object-fit:cover;object-position:50% 30%;flex:none;border:1.5px solid var(--gold)}
+.gment-h span{flex:1;min-width:0}.gment-h b{display:block;font-size:15.5px;font-weight:800;color:var(--ink)}
+.gment-h b .nw{font-style:normal;font-size:10px;font-weight:800;background:var(--gold);color:#26111D;border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+.gment-h small{display:block;font-size:12.5px;color:var(--sub);margin-top:3px;line-height:1.45}
+.gment-h em{font-style:normal;font-size:22px;color:var(--gold)}
+.gment-q{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px}
+.gment-q button{display:flex;align-items:center;gap:7px;text-align:left;border-radius:12px;padding:9px 10px;background:var(--soft2);border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.35;min-width:0}
+.gment-q i{font-style:normal;flex:none;width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:13px;background:rgba(242,167,184,.16);color:var(--pink)}
+.gment.today{margin-top:14px}
 /* 하단 탭바 */
 .mnav{position:fixed;left:0;right:0;bottom:0;z-index:40;height:66px;padding-bottom:env(safe-area-inset-bottom);display:flex;justify-content:center;background:rgba(20,8,15,.94);backdrop-filter:blur(10px);border-top:1px solid rgba(226,190,140,.2)}
 .mnav>div{display:flex;width:100%;max-width:720px;justify-content:space-around;align-items:center}
@@ -2075,12 +2089,13 @@ function renderLanding(){
   const saved = loadSaved(); const me = state.input;
   view.innerHTML = `<section class="pad" style="text-align:left">
     <div class="mh"><h1>묘하게 잘 맞는<br>고양이 점술사의<br><em>사주 상담소</em></h1><div class="bub"><small>묘묘</small>냐옹, 수정구슬에 네 오늘이 보여 ✦</div></div>
-    <div class="mfeat">${(() => { const c = cardToday(); return '<button class="wide wc" data-act="nav" data-to="/card"><span class="mini3"><span>妙</span><span>妙</span><span>妙</span></span><span class="tx"><b>오늘의 묘묘 카드 뽑기<i class="nw">NEW</i></b><small>' + (c ? '오늘 카드: ' + MYO_CARDS[c.idx][0] + ' ' + MYO_CARDS[c.idx][1] + ' · 다시 보기' : '생일 입력 없이 바로! 카드 한 장으로 보는 오늘의 한 마디') + '</small></span><span class="ar">›</span></button>'; })()}<button class="wide wg" data-act="nav" data-to="/group"><span class="gi">👑</span><span class="tx"><b>단톡방 사주 역할표<i class="nw">HOT</i></b><small>친구 3~6명 생일로 정해 주는 우리 방 리더·총무·잠수왕</small></span><span class="ar">›</span></button></div>
+    <div class="mfeat"><button class="wide wq" data-act="nav" data-to="/gomin"><span class="gq">問</span><span class="tx"><b>묘묘 고민상담<i class="nw">NEW</i></b><small>돈·일·연애·이사… 궁금한 고민을 고르면 묘묘가 답해 줘</small></span><span class="ar">›</span></button>${(() => { const c = cardToday(); return '<button class="wide wc" data-act="nav" data-to="/card"><span class="mini3"><span>妙</span><span>妙</span><span>妙</span></span><span class="tx"><b>오늘의 묘묘 카드 뽑기<i class="nw">NEW</i></b><small>' + (c ? '오늘 카드: ' + MYO_CARDS[c.idx][0] + ' ' + MYO_CARDS[c.idx][1] + ' · 다시 보기' : '생일 입력 없이 바로! 카드 한 장으로 보는 오늘의 한 마디') + '</small></span><span class="ar">›</span></button>'; })()}<button class="wide wg" data-act="nav" data-to="/group"><span class="gi">👑</span><span class="tx"><b>단톡방 사주 역할표<i class="nw">HOT</i></b><small>친구 3~6명 생일로 정해 주는 우리 방 리더·총무·잠수왕</small></span><span class="ar">›</span></button></div>
     <div class="mstart"><h3>${me ? esc(me.name) + '님, 또 왔구나!' : '생년월일만 알려주세요'}</h3><p>계산은 모두 내 폰 안에서만 해요 · 어디에도 보내지 않아요</p>
       ${me ? '<button class="btn y" data-act="nav" data-to="/result">' + esc(me.name) + '님 사주 다시 보기</button>' : '<button class="btn y" data-act="start">묘묘에게 내 사주 보여주기</button>'}
       ${me || saved.length ? '<div class="sub2">' + (me ? '<button data-act="start">새 사주 보기</button>' : '') + (saved.length ? '<button data-act="load">저장된 사주 불러오기</button>' : '') + '</div>' : ''}
     </div>
     ${starRemind()}
+    ${gominEntry()}
     <div class="msec"><b>묘묘의 오늘 추천</b><span>모두 무료</span></div>
     <div class="mtiles">
       <button class="mtile" data-act="tab" data-k="today"><span class="h">卯</span><span><b>오늘의 운세</b><small>점수 · 행운 처방</small></span></button>
@@ -2140,6 +2155,7 @@ function renderToday0(){
     ${off === 0 ? starCard() : ''}
     ${T.stars[1] <= 2 ? recoCard('연애', '애정운이 ★' + T.stars[1] + '개인 날, 연애 고민은 연화아씨에게 물어봐') : ''}
     <div class="tp-card"><h4>점수에 따라 묘묘 표정이 바뀌어요</h4><div class="tp-faces">${[['joy','80점↑ 신남'],['curious','68점↑ 궁금'],['wish','56점↑ 소원'],['worry','그 아래 시무룩']].map(x => '<div class="' + (x[0] === f ? 'on' : '') + '"><img src="img/' + x[0] + '.jpg" alt="">' + x[1] + '</div>').join('')}</div></div>
+    ${gominEntry('today')}
     <button class="mbtn3" data-act="tShare">오늘의 운세 친구에게 공유하기</button>
     <button class="btn g" data-act="nav" data-to="/result" style="margin-top:10px;height:50px;font-size:15px">내 사주 결과 보기</button>
     <p class="tp-foot">내 일간 ${ST[R.dm]}${EL[stEl(R.dm)]}${hasJong(EL[stEl(R.dm)]) ? '과' : '와'} 그날 일진의 관계로 보는 참고용 운세예요. 행운의 색·숫자·방향은 원국에서 가장 약한 기운(${EL[T.low]})을 채우는 쪽으로, 좋은 시간(${T.goodHour})은 그날 지지와 합이 되는 시간이에요.</p>
@@ -3377,6 +3393,11 @@ function gmMonthChart(A){
   const bs = new Set(A.best.map(m => m.lab)), ws = new Set(A.worst.slice(0, 1).map(m => m.lab));
   return `<div class="gm-mon">${A.months.map(m => `<div class="${bs.has(m.lab) ? 'b' : ws.has(m.lab) ? 'w' : ''}"><i style="height:${Math.round(18 + (m.v - mn) / rg * 82)}%"></i><span>${m.cm}월</span></div>`).join('')}</div>`;
 }
+function gominEntry(where){
+  const quick = [['money', 0, '財', '돈'], ['love', 1, '戀', '연애'], ['job', 0, '職', '이직'], ['move', 0, '移', '이사']];
+  return '<div class="gment ' + (where || '') + '"><button class="gment-h" data-act="nav" data-to="/gomin"><img src="img/curious.jpg" alt=""><span><b>묘묘 고민상담<i class="nw">NEW</i></b><small>돈·일·연애·이사… 고민을 고르면 묘묘가 내 사주로 답해 줘</small></span><em>›</em></button>'
+    + '<div class="gment-q">' + quick.map(([k, i, h, t]) => '<button data-act="nav" data-to="/gomin/' + k + '/' + i + '"><i>' + h + '</i>' + gmCat(k).qs[i][0] + '</button>').join('') + '</div></div>';
+}
 function renderGomin(){
   const pop = [['money', 0], ['love', 2], ['job', 0], ['move', 0], ['people', 3]];
   view.innerHTML = `<section class="pad gm">
@@ -3462,6 +3483,7 @@ function renderResult(){
   view.innerHTML = `
   <section class="pad">${profileBlock(R)}${myoSayResult(R)}${chartBlock(R)}<p class="tap-hint">✦ 표의 칸을 누르면 그 글자의 풀이가 나와요</p></section>
   ${todayMini(R)}
+  <section class="pad">${gominEntry()}</section>
   ${roomsBlock(R)}
   <div class="acts">
     <button class="act y" data-act="save"><span class="ic"><svg width="40" height="40" viewBox="0 0 40 40"><path d="M10 6h20a3 3 0 013 3v25l-13-6-13 6V9a3 3 0 013-3z" stroke="#FBEFEF" stroke-width="2.4" fill="none" stroke-linejoin="round"/></svg></span>저장하기</button>
